@@ -68,7 +68,7 @@ function Title(props) {
 // export default HomePage
 
 export default function PaginaInicial() {
-    const [username, setUsername] = useState('erick-menezes');
+    const [username, setUsername] = useState('');
   
     return (
       <>
