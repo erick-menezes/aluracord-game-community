@@ -6,9 +6,7 @@ import appConfig from '../config.json';
 
 import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0Mzc1MzQyMywiZXhwIjoxOTU5MzI5NDIzfQ.AuQ_kdA22dBDWoD2dIvMeE-KawiFNJBS1urj02fTmVo';
-const SUPABASE_URL = 'https://pejhaauhsjtvjstzgvac.supabase.co';
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
 
 function escutaMensagensEmTempoReal(callback) {
     return supabaseClient
@@ -66,14 +64,11 @@ export default function ChatPage() {
         setMensagem('');
     }
 
-    console.log('listaDeMensagens', listaDeMensagens);
-
     return (
         <Box
             styleSheet={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backgroundColor: appConfig.theme.colors.primary[500],
-                backgroundImage: `url(https://virtualbackgrounds.site/wp-content/uploads/2020/08/the-matrix-digital-rain.jpg)`,
+                backgroundImage: 'url(https://www.nawpic.com/media/2020/genshin-impact-nawpic-10-scaled.jpg)',
                 backgroundRepeat: 'no-repeat', backgroundSize: 'cover', backgroundBlendMode: 'multiply',
                 color: appConfig.theme.colors.neutrals['000']
             }}

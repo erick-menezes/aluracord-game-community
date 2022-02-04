@@ -30,7 +30,7 @@ export default function PaginaInicial() {
         e.preventDefault();
         router.push(`/chat?username=${username}`);
     }
-    
+
     return (
       <>
         <Box
