@@ -1,38 +1,69 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
-import { createClient } from '@supabase/supabase-js'
 import { useRouter } from 'next/router';
 import React, { useEffect } from 'react';
 import appConfig from '../config.json';
 
+// import { insertListener, deleteListener, supabaseClient } from '../apis/supabase/client';
+
+import { supabaseClient, listener } from '../apis/supabase/client';
+
 import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
-
-const supabaseClient = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-
-function escutaMensagensEmTempoReal(callback) {
-    return supabaseClient
-        .from('mensagens')
-        .on('INSERT', (data) => {
-            callback(data.new);
-        })
-        .subscribe();
-}
 
 export default function ChatPage() {
     const [mensagem, setMensagem] = React.useState('');
     const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
     const router = useRouter();
 
+    let xPos, yPos;
+
     useEffect(() => {
+        redirectUser();
         getMessages();
-        escutaMensagensEmTempoReal((mensagem) => {
-            setListaDeMensagens(valorAtualDaLista => {
-                return [
-                    mensagem,
-                    ...valorAtualDaLista
-                ]
-            });
-        });
+        listener(insertAction, deleteAction);
+
+        document.addEventListener("contextmenu", handleContextMenu);
+
+        return () => document.removeEventListener("contextmenu", handleContextMenu);
     }, []);
+
+    useEffect(() => {
+        checkDuplicateMessages();
+    }, [listaDeMensagens]);
+
+    const handleContextMenu = (event) => {
+        event.preventDefault();
+        xPos = event.pageX + "px";
+        yPos = event.pageY + "px";
+        console.log('position X: ', xPos);
+        console.log('position Y: ', yPos);
+    }
+
+    const insertAction = (mensagem) => {
+        setListaDeMensagens(valorAtualDaLista => {
+            return [
+                mensagem,
+                ...valorAtualDaLista
+            ]
+        });
+    }
+
+    const checkDuplicateMessages = () => {
+        setTimeout(() => {
+            const messageListFilter = listaDeMensagens.filter(msg => !msg.id)[0];
+            const duplicateIndex = listaDeMensagens.findIndex(mensagem => mensagem === messageListFilter);
+            const newMessageList = [...listaDeMensagens];
+
+            if (duplicateIndex !== -1) {
+                newMessageList.splice(duplicateIndex, 1);
+                setListaDeMensagens(newMessageList);
+            }
+        }, 300);
+    }
+
+    const deleteAction = (mensagem) => {
+        const newList = listaDeMensagens.filter(msg => msg.id !== mensagem.id);
+        setListaDeMensagens(newList);
+    };
 
     const getMessages = () => {
         supabaseClient
@@ -62,6 +93,18 @@ export default function ChatPage() {
             })
 
         setMensagem('');
+        setListaDeMensagens(valorAtualDaLista => {
+            return [
+                mensagem,
+                ...valorAtualDaLista
+            ]
+        });
+    }
+
+    function redirectUser() {
+        if (!router.query.username && !localStorage.getItem('github_user')) {
+            router.push('/');
+        }
     }
 
     return (
@@ -111,8 +154,7 @@ export default function ChatPage() {
                         <TextField
                             value={mensagem}
                             onChange={(event) => {
-                                const valor = event.target.value;
-                                setMensagem(valor);
+                                setMensagem(event.target.value);
                             }}
                             onKeyPress={(event) => {
                                 if (event.key === 'Enter') {

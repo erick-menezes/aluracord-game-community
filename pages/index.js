@@ -1,7 +1,9 @@
 import { Box, Button, Text, TextField, Image, Icon } from '@skynexui/components'; 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import appConfig from '../config.json';
+
+import { supabaseClient } from '../apis/supabase/client';
 
 function Title(props) {
     const Tag = props.tag || 'h1';
@@ -24,11 +26,34 @@ function Title(props) {
 
 export default function PaginaInicial() {
     const [username, setUsername] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        router.push(`/chat?username=${username}`);
+    useEffect(() => {
+      checkUser();
+    }, []);
+    
+    // Ver se o usuário está logado ou não
+    const signInWithGithub = async () => {
+      try {
+        setLoading(true);
+        await supabaseClient.auth.signIn({
+          provider: 'github', 
+        });
+      } catch (e) {
+        console.log('error', e);
+      } finally {
+        setLoading(false);
+      }
+
+      // localStorage.setItem('github_user', username);
+      // router.push(`/chat?username=${username}`);
+    }
+
+    const checkUser = async () => {
+      const user = supabaseClient.auth.user();
+
+      console.log('userrr', user);
     }
 
     return (
@@ -57,8 +82,6 @@ export default function PaginaInicial() {
           >
             {/* Formulário */}
             <Box
-              as="form"
-              onSubmit={(e) => handleSubmit(e)}
               styleSheet={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
                 width: { xs: '100%', sm: '50%' }, textAlign: 'center', marginBottom: '32px',
@@ -69,7 +92,7 @@ export default function PaginaInicial() {
                 {appConfig.name}
               </Text>
   
-              <TextField
+              {/* <TextField
                 fullWidth
                 textFieldColors={{
                   neutral: {
@@ -85,11 +108,26 @@ export default function PaginaInicial() {
                 type='submit'
                 label='Entrar'
                 fullWidth
+                disabled={username.length < 3}
                 buttonColors={{
                   contrastColor: appConfig.theme.colors.neutrals["000"],
-                  mainColor: appConfig.theme.colors.primary[500],
+                  mainColor: username.length < 3 ? appConfig.theme.colors.neutrals['800'] : appConfig.theme.colors.primary[500],
                   mainColorLight: appConfig.theme.colors.primary[400],
-                  mainColorStrong: appConfig.theme.colors.primary[600],
+                  mainColorStrong: username.length < 3 ? '' : appConfig.theme.colors.primary[600],
+                }}
+              /> */}
+              <Button 
+                onClick={signInWithGithub}
+                label={!loading ? "Entrar com GitHub" : "Logando..."}
+                size="xl"
+                iconName="github"
+                buttonColors={{
+                  contrastColor: appConfig.theme.colors.neutrals["000"],
+                  mainColor: appConfig.theme.colors.neutrals[999],
+                }}
+                disabled={loading}
+                styleSheet={{
+                  fontWeight: 800,
                 }}
               />
             </Box>

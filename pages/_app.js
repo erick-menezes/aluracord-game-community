@@ -1,3 +1,7 @@
+import { createContext, useReducer } from  'react';
+
+export const AuthContext = createContext();
+
 function GlobalStyle() {
     return (
         <style global jsx>
@@ -33,9 +37,12 @@ function GlobalStyle() {
 
 export default function MyApp({ Component, pageProps }) {
     return (
-        <>
+        <AuthContext.Provider value={{
+            // state,
+            // dispatch
+        }}>
             <GlobalStyle />
             <Component {...pageProps} />
-        </>
+        </AuthContext.Provider>
     )
 }
